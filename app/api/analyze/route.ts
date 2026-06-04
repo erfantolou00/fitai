@@ -1,20 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateFullPlan } from '@/app/lib/ai/generate';
-import { UserProfile } from '@/app/types/user';
+import { AIProviderError, parseAIError } from '@/app/lib/ai/errors';
+import { DEFAULT_PROFILE, UserProfile } from '@/app/types/user';
+
+function validateProfile(data: unknown): UserProfile | null {
+  if (!data || typeof data !== 'object') return null;
+  const p = data as Partial<UserProfile>;
+
+  const requiredNumbers: (keyof UserProfile)[] = [
+    'age',
+    'height',
+    'currentWeight',
+    'targetWeight',
+    'experienceMonths',
+    'daysPerWeek',
+    'minutesPerSession',
+    'mealsPerDay',
+  ];
+
+  for (const key of requiredNumbers) {
+    const val = p[key];
+    if (typeof val !== 'number' || Number.isNaN(val)) return null;
+  }
+
+  if (p.gender !== 'male' && p.gender !== 'female') return null;
+  if (!['beginner', 'intermediate', 'advanced'].includes(p.fitnessLevel ?? ''))
+    return null;
+  if (
+    !['fat_loss', 'muscle_gain', 'strength', 'general_fitness'].includes(
+      p.goal ?? ''
+    )
+  )
+    return null;
+  if (!['gym', 'home', 'both'].includes(p.location ?? '')) return null;
+  if (typeof p.nutritionEnabled !== 'boolean') return null;
+
+  return {
+    ...DEFAULT_PROFILE,
+    ...p,
+    injuries: String(p.injuries ?? ''),
+    dietaryRestrictions: String(p.dietaryRestrictions ?? ''),
+  };
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const profile: UserProfile = await req.json();
+    const body = await req.json();
+    const profile = validateProfile(body);
 
-    // validation ساده
-    if (!profile.age || !profile.height || !profile.currentWeight) {
-      return NextResponse.json({ error: 'اطلاعات ناقص است' }, { status: 400 });
+    if (!profile) {
+      return NextResponse.json(
+        { error: 'اطلاعات ورودی نامعتبر است' },
+        { status: 400 }
+      );
     }
 
     const result = await generateFullPlan(profile);
     return NextResponse.json(result);
   } catch (error) {
-    console.error('AI Error:', error);
-    return NextResponse.json({ error: 'خطا در سرور' }, { status: 500 });
+    const aiError =
+      error instanceof AIProviderError ? error : parseAIError(error);
+    console.error('AI Error:', aiError.code, aiError.message);
+    return NextResponse.json(
+      { error: aiError.message, code: aiError.code },
+      { status: aiError.status }
+    );
   }
 }

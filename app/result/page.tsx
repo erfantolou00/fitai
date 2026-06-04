@@ -1,124 +1,235 @@
 'use client';
-import { useEffect, useState } from 'react';
+
+import { PageShell, SectionTitle } from '@/app/components/layout/page-shell';
+import { Alert } from '@/app/components/ui/alert';
+import { Button } from '@/app/components/ui/button';
+import { Card, CardTitle, StatBox } from '@/app/components/ui/card';
+import { loadResult } from '@/app/lib/storage';
+import { cn } from '@/app/lib/utils/cn';
+import { AIResult, DEFAULT_ANALYSIS } from '@/app/types/user';
 import { useRouter } from 'next/navigation';
-import { AIResult } from '@/app/types/user';
+import { useEffect, useState } from 'react';
 
 export default function ResultPage() {
   const router = useRouter();
   const [result, setResult] = useState<AIResult | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const raw = localStorage.getItem('fitai_result');
-    if (!raw) {
-      router.push('/onboarding');
-      return;
+    setTimeout(() => setMounted(true), 0);
+    try {
+      const parsed = loadResult();
+      if (!parsed) {
+        router.push('/onboarding');
+        return;
+      }
+
+      if (!parsed.analysis) parsed.analysis = { ...DEFAULT_ANALYSIS };
+      if (!parsed.program) parsed.program = { weeklyPlan: [] };
+
+      setResult(parsed);
+    } catch {
+      setError('خطا در خواندن نتیجه');
     }
-    const parsed: AIResult = JSON.parse(raw);
-    setResult(parsed);
   }, [router]);
 
-  if (!result) return (
-    <div dir="rtl" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-      <p>در حال بارگذاری...</p>
-    </div>
-  );
+  if (!mounted) return null;
 
-  const { analysis, program } = result;
+  if (error) {
+    return (
+      <PageShell showBack title="خطا">
+        <div className="text-center py-16">
+          <Alert variant="danger" className="mb-6 inline-block text-right">
+            {error}
+          </Alert>
+          <br />
+          <Button onClick={() => router.push('/onboarding')}>
+            دوباره امتحان کن
+          </Button>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (!result) {
+    return (
+      <PageShell title="بارگذاری">
+        <div className="text-center py-16 text-muted">در حال بارگذاری...</div>
+      </PageShell>
+    );
+  }
+
+  const { analysis, program, nutrition } = result;
+  const hasProgram = program?.weeklyPlan?.length > 0;
 
   return (
-    <div dir="rtl" style={{ maxWidth: 520, margin: '0 auto', padding: '2rem 1rem' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 500 }}>برنامه شخصی تو</h1>
+    <PageShell showBack title="برنامه شخصی">
+      <SectionTitle
+        title="برنامه شخصی تو"
+        subtitle="بر اساس اطلاعاتی که دادی ساخته شده"
+      />
 
-      {/* Analysis Card */}
-      <div style={{
-        padding: 20, borderRadius: 12, marginBottom: 20,
-        border: '1px solid #d1fae5', background: '#f0fdf4',
-      }}>
-        <h2 style={{ fontSize: 16, fontWeight: 500, color: '#065f46', margin: '0 0 12px' }}>آنالیز بدنی</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div style={{ background: '#fff', padding: 12, borderRadius: 8 }}>
-            <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>BMI</p>
-            <p style={{ margin: '4px 0 0', fontSize: 24, fontWeight: 500 }}>
-              {analysis.bmi?.toFixed(1)}
-            </p>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#6b7280' }}>{analysis.bmiStatus}</p>
-          </div>
-          <div style={{ background: '#fff', padding: 12, borderRadius: 8 }}>
-            <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>دوره پیشنهادی</p>
-            <p style={{ margin: '4px 0 0', fontSize: 16, fontWeight: 500 }}>{analysis.recommendedPhase}</p>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#6b7280' }}>{analysis.timeEstimate}</p>
-          </div>
+      <Card variant="success" className="mb-6">
+        <CardTitle className="text-primary-dark mb-4">آنالیز بدنی</CardTitle>
+        <div className="grid grid-cols-2 gap-3">
+          <StatBox
+            label="BMI"
+            value={analysis?.bmi ? Number(analysis.bmi).toFixed(1) : '—'}
+            sub={analysis?.bmiStatus}
+          />
+          <StatBox
+            label="دوره پیشنهادی"
+            value={analysis?.recommendedPhase ?? '—'}
+            sub={analysis?.timeEstimate}
+          />
         </div>
-        {analysis.importantNote && (
-          <div style={{
-            marginTop: 12, padding: 12, background: '#fef3c7',
-            borderRadius: 8, fontSize: 13, color: '#92400e', lineHeight: 1.6,
-          }}>
+        {analysis?.importantNote && (
+          <Alert variant="warning" className="mt-4 mb-0">
             {analysis.importantNote}
-          </div>
+          </Alert>
         )}
+      </Card>
+
+      <SectionTitle title="برنامه هفتگی" />
+
+      {!hasProgram && (
+        <Alert variant="danger" className="mb-4">
+          برنامه تمرینی دریافت نشد. لطفاً دوباره امتحان کنید.
+        </Alert>
+      )}
+
+      <div className="flex flex-col gap-3 mb-8">
+        {program?.weeklyPlan?.map((day, i) => (
+          <Card
+            key={i}
+            padding="sm"
+            variant={day.isRest ? 'default' : 'info'}
+            className={cn('overflow-hidden p-0', day.isRest && 'opacity-80')}
+          >
+            <div
+              className={cn(
+                'px-4 py-3 flex justify-between items-center',
+                !day.isRest && 'border-b border-info/15'
+              )}
+            >
+              <span className="font-semibold text-[15px]">{day.day}</span>
+              {day.isRest ? (
+                <span className="text-xs text-muted">استراحت 😴</span>
+              ) : (
+                <span className="text-xs text-info-dark">
+                  {day.muscleGroups?.join(' · ')}
+                </span>
+              )}
+            </div>
+            {!day.isRest &&
+              day.exercises?.map((ex, j) => (
+                <div
+                  key={j}
+                  className={cn(
+                    'px-4 py-2.5',
+                    j < (day.exercises?.length ?? 0) - 1 &&
+                      'border-b border-info/10'
+                  )}
+                >
+                  <div className="flex justify-between items-start gap-3">
+                    <span className="text-sm font-medium">{ex.name}</span>
+                    <span className="text-xs text-muted shrink-0">
+                      {ex.sets} ست × {ex.reps}
+                    </span>
+                  </div>
+                  {ex.homeAlternative && (
+                    <p className="text-xs text-muted mt-1 mb-0">
+                      جایگزین خانگی: {ex.homeAlternative}
+                    </p>
+                  )}
+                  {ex.notes && (
+                    <p className="text-[11px] text-muted-light mt-0.5 mb-0">
+                      {ex.notes}
+                    </p>
+                  )}
+                </div>
+              ))}
+          </Card>
+        ))}
       </div>
 
-      {/* Weekly Program */}
-      <h2 style={{ fontSize: 18, fontWeight: 500 }}>برنامه هفتگی</h2>
-      {program.weeklyPlan?.map((day, i) => (
-        <div key={i} style={{
-          marginBottom: 12, borderRadius: 10,
-          border: day.isRest ? '1px solid #e5e7eb' : '1px solid #dbeafe',
-          background: day.isRest ? '#f9fafb' : '#eff6ff',
-        }}>
-          <div style={{
-            padding: '12px 16px',
-            borderBottom: day.isRest ? 'none' : '1px solid #dbeafe',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 500, fontSize: 15 }}>{day.day}</span>
-              {day.isRest
-                ? <span style={{ fontSize: 12, color: '#6b7280' }}>استراحت</span>
-                : <span style={{ fontSize: 12, color: '#1e40af' }}>{day.muscleGroups?.join(' · ')}</span>
-              }
+      {nutrition && (
+        <>
+          <SectionTitle title="برنامه تغذیه" />
+          <Card variant="success" className="mb-6">
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <StatBox
+                label="کالری روزانه"
+                value={nutrition.dailyCalories}
+                sub="کیلوکالری"
+              />
+              <StatBox
+                label="ماکروها"
+                value={`${nutrition.macros?.protein}g پروتئین`}
+                sub={`${nutrition.macros?.carbs}g کرب · ${nutrition.macros?.fat}g چربی`}
+              />
             </div>
-          </div>
-          {!day.isRest && day.exercises?.map((ex, j) => (
-            <div key={j} style={{
-              padding: '10px 16px',
-              borderBottom: j < day.exercises.length - 1 ? '1px solid #dbeafe' : 'none',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 14, fontWeight: 500 }}>{ex.name}</span>
-                <span style={{ fontSize: 12, color: '#6b7280' }}>{ex.sets} ست × {ex.reps}</span>
-              </div>
-              {ex.homeAlternative && (
-                <p style={{ margin: '4px 0 0', fontSize: 12, color: '#6b7280' }}>
-                  جایگزین خانگی: {ex.homeAlternative}
-                </p>
-              )}
-              {ex.notes && (
-                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#9ca3af' }}>
-                  {ex.notes}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      ))}
 
-      {/* CTA */}
-      <div style={{
-        marginTop: 24, padding: 20, borderRadius: 12,
-        border: '1px solid #fde68a', background: '#fffbeb', textAlign: 'center',
-      }}>
-        <p style={{ margin: '0 0 8px', fontWeight: 500 }}>این یک نمونه دموست</p>
-        <p style={{ margin: '0 0 16px', fontSize: 13, color: '#6b7280' }}>
-          با اشتراک کامل: آموزش تصویری حرکات، برنامه تغذیه، و پیگیری پیشرفت
+            <div className="flex flex-col gap-3">
+              {nutrition.meals?.map((meal, i) => (
+                <div
+                  key={i}
+                  className="bg-surface rounded-lg p-3 border border-border/60"
+                >
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-medium text-sm">{meal.name}</span>
+                    <span className="text-xs text-muted">{meal.time}</span>
+                  </div>
+                  <p className="text-xs text-muted m-0 leading-relaxed">
+                    {meal.foods?.join(' · ')}
+                  </p>
+                  <p className="text-[11px] text-primary-dark mt-1 mb-0">
+                    {meal.calories} kcal — P:{meal.protein} C:{meal.carbs} F:
+                    {meal.fat}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {nutrition.tips?.length > 0 && (
+              <Alert variant="info" className="mt-4 mb-0">
+                <ul className="m-0 pr-4">
+                  {nutrition.tips.map((tip, i) => (
+                    <li key={i}>{tip}</li>
+                  ))}
+                </ul>
+              </Alert>
+            )}
+
+            {nutrition.hydration && (
+              <p className="text-xs text-muted mt-3 mb-0">
+                💧 {nutrition.hydration}
+              </p>
+            )}
+          </Card>
+        </>
+      )}
+
+      <Card variant="warning" className="text-center">
+        <p className="font-semibold m-0 mb-2">این یک نمونه دموست</p>
+        <p className="text-sm text-muted m-0 mb-4">
+          با اشتراک کامل: آموزش تصویری حرکات، برنامه تغذیه پیشرفته، و پیگیری
+          پیشرفت
         </p>
-        <button style={{
-          padding: '12px 32px', borderRadius: 8, fontSize: 15, fontWeight: 500,
-          border: 'none', background: '#1D9E75', color: '#fff', cursor: 'pointer',
-        }}>
-          مشاهده پلن‌ها
-        </button>
-      </div>
-    </div>
+        <div className="flex gap-2 justify-center flex-wrap">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => router.push('/onboarding')}
+          >
+            برنامه جدید
+          </Button>
+          <Button size="sm" onClick={() => router.push('/pricing')}>
+            مشاهده پلن‌ها
+          </Button>
+        </div>
+      </Card>
+    </PageShell>
   );
 }

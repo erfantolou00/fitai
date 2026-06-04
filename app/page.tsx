@@ -1,65 +1,89 @@
-import Image from "next/image";
+'use client';
+
+import { Badge } from '@/app/components/ui/alert';
+import { Button } from '@/app/components/ui/button';
+import { PageShell } from '@/app/components/layout/page-shell';
+import { useRouter } from 'next/navigation';
+
+const FEATURES = [
+  { icon: '🎯', text: 'برنامه شخصی' },
+  { icon: '🧬', text: 'آنالیز بدنی' },
+  { icon: '🥗', text: 'تغذیه ایرانی' },
+  { icon: '📸', text: 'کالری از عکس' },
+] as const;
+
+const STATS = [
+  { num: '۵ دقیقه', label: 'زمان تنظیم' },
+  { num: '۱۰۰٪', label: 'شخصی‌سازی' },
+  { num: 'رایگان', label: 'برای همیشه' },
+] as const;
 
 export default function Home() {
+  const router = useRouter();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <PageShell variant="dark" maxWidth="lg" showHeader={false}>
+      <div className="relative min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center text-center py-12">
+        <div
+          className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(29,158,117,0.15) 0%, transparent 70%)',
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+
+        <div className="animate-fade-up relative z-10 mb-10">
+          <Badge
+            variant="primary"
+            className="mb-8 bg-primary/10 border-primary/30 text-primary"
+          >
+            <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
+            هوش مصنوعی ورزشی
+          </Badge>
+
+          <h1 className="text-[clamp(2.5rem,8vw,5rem)] font-extrabold text-white m-0 leading-tight tracking-tight">
+            فیتار<span className="text-primary">.</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-[clamp(1rem,3vw,1.25rem)] text-muted mt-4 max-w-md mx-auto leading-relaxed">
+            برنامه تمرینی شخصی‌سازی‌شده با هوش مصنوعی
+            <br />
+            بدون مربی، بدون کاغذ A4
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="animate-fade-up-delay-1 relative z-10 flex gap-3 flex-wrap justify-center mb-10">
+          {FEATURES.map(({ icon, text }) => (
+            <Badge
+              key={text}
+              variant="outline"
+              className="bg-white/5 border-white/10 text-[#aaa]"
+            >
+              <span className="text-base">{icon}</span>
+              {text}
+            </Badge>
+          ))}
         </div>
-      </main>
-    </div>
+
+        <div className="animate-fade-up-delay-2 relative z-10 flex flex-col items-center gap-4">
+          <Button
+            size="lg"
+            className="animate-pulse-glow"
+            onClick={() => router.push('/onboarding')}
+          >
+            برنامه رایگان بگیر ←
+          </Button>
+          <p className="text-xs text-[#555] m-0">بدون ثبت‌نام · ۳۰ ثانیه</p>
+        </div>
+
+        <div className="animate-fade-up-delay-3 relative z-10 mt-16 flex gap-10">
+          {STATS.map(({ num, label }) => (
+            <div key={label} className="text-center">
+              <div className="text-lg font-bold text-white">{num}</div>
+              <div className="text-[11px] text-[#555] mt-0.5">{label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </PageShell>
   );
 }

@@ -1,91 +1,152 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { ANALYSIS_PROMPT, PROGRAM_PROMPT } from './prompts';
-import { AIResult, UserProfile } from '@/app/types/user';
+import OpenAI from 'openai';
+import { parseAIError } from './errors';
+import {
+  ANALYSIS_PROMPT,
+  NUTRITION_PROMPT,
+  PROGRAM_PROMPT,
+  buildPromptVars,
+  fillTemplate,
+} from './prompts';
+import {
+  AIResult,
+  BodyAnalysis,
+  DEFAULT_ANALYSIS,
+  NutritionPlan,
+  UserProfile,
+} from '@/app/types/user';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const client = new OpenAI({
+  baseURL: 'https://api.gapgpt.app/v1',
+  apiKey: process.env.GAPGPT_API_KEY,
+});
 
-const goalMap: Record<string, string> = {
-  fat_loss: 'کاهش چربی',
-  muscle_gain: 'افزایش حجم عضلانی',
-  strength: 'افزایش قدرت',
-  general_fitness: 'تناسب اندام عمومی',
-};
-
-const levelMap: Record<string, string> = {
-  beginner: 'مبتدی',
-  intermediate: 'متوسط',
-  advanced: 'پیشرفته',
-};
-
-const locationMap: Record<string, string> = {
-  gym: 'باشگاه',
-  home: 'خانه',
-  both: 'باشگاه و خانه',
-};
-
-function fillTemplate(template: string, vars: Record<string, string>): string {
-  return Object.entries(vars).reduce(
-    (t, [k, v]) => t.replace(new RegExp(`{{${k}}}`, 'g'), v),
-    template
-  );
+function extractJsonSlice(text: string): string | null {
+  const clean = text.replace(/```json|```/g, '').trim();
+  const start = clean.indexOf('{');
+  if (start === -1) return null;
+  return clean.slice(start);
 }
 
-function safeParseJSON(text: string) {
+function repairTruncatedJson(json: string): string {
+  let s = json.replace(/,\s*$/, '');
+  s = s.replace(/,\s*"[^"]*"?\s*:?\s*("[^"]*)?$/, '');
+  s = s.replace(/,\s*\{[^}]*$/, '');
+
+  let braces = 0;
+  let brackets = 0;
+  let inString = false;
+  let escape = false;
+
+  for (const ch of s) {
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (ch === '\\') {
+      escape = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (ch === '{') braces++;
+    if (ch === '}') braces--;
+    if (ch === '[') brackets++;
+    if (ch === ']') brackets--;
+  }
+
+  if (inString) s += '"';
+  while (brackets > 0) {
+    s += ']';
+    brackets--;
+  }
+  while (braces > 0) {
+    s += '}';
+    braces--;
+  }
+  return s;
+}
+
+function safeParseJSON<T>(text: string): T | null {
+  const slice = extractJsonSlice(text);
+  if (!slice) return null;
+
+  for (const candidate of [slice, repairTruncatedJson(slice)]) {
+    try {
+      return JSON.parse(candidate) as T;
+    } catch {
+      // try next repair strategy
+    }
+  }
+  return null;
+}
+
+async function callAI(prompt: string, maxTokens = 1500): Promise<string> {
+  if (!process.env.GAPGPT_API_KEY) {
+    throw parseAIError(new Error('GAPGPT_API_KEY is not configured'));
+  }
+
   try {
-    const clean = text.replace(/```json|```/g, '').trim();
-    // پیدا کردن اولین { و آخرین }
-    const start = clean.indexOf('{');
-    const end = clean.lastIndexOf('}');
-    if (start === -1 || end === -1) throw new Error('No JSON found');
-    return JSON.parse(clean.slice(start, end + 1));
-  } catch {
-    return null;
+    const response = await client.chat.completions.create({
+      model: 'gapgpt-qwen-3.6',
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    return response.choices[0].message.content ?? '';
+  } catch (error) {
+    throw parseAIError(error);
   }
 }
 
-async function callClaude(prompt: string): Promise<string> {
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001', // ارزان‌ترین مدل برای دمو
-    max_tokens: 1500,
-    messages: [{ role: 'user', content: prompt }],
-  });
-  return response.content[0].type === 'text' ? response.content[0].text : '';
+function normalizeAnalysis(raw: Partial<BodyAnalysis> | null): BodyAnalysis {
+  if (!raw) return { ...DEFAULT_ANALYSIS, importantNote: 'لطفاً دوباره تلاش کنید' };
+  return {
+    bmi: Number(raw.bmi) || 0,
+    bmiStatus: raw.bmiStatus ?? 'نامشخص',
+    recommendedPhase: raw.recommendedPhase ?? 'نامشخص',
+    timeEstimate: raw.timeEstimate ?? 'نامشخص',
+    importantNote: raw.importantNote ?? '',
+  };
 }
 
 export async function generateFullPlan(profile: UserProfile): Promise<AIResult> {
-  const vars = {
-    age: String(profile.age),
-    gender: profile.gender === 'male' ? 'مرد' : 'زن',
-    height: String(profile.height),
-    currentWeight: String(profile.currentWeight),
-    targetWeight: String(profile.targetWeight),
-    goal: goalMap[profile.goal] || profile.goal,
-    fitnessLevel: levelMap[profile.fitnessLevel] || profile.fitnessLevel,
-    experienceMonths: String(profile.experienceMonths),
-    level: levelMap[profile.fitnessLevel] || profile.fitnessLevel,
-    location: locationMap[profile.location] || profile.location,
-    daysPerWeek: String(profile.daysPerWeek),
-    minutes: String(profile.minutesPerSession),
-    injuries: profile.injuries || 'ندارم',
-    phase: 'بر اساس آنالیز تعیین کن',
+  const baseVars = buildPromptVars(profile);
+
+  const analysisText = await callAI(
+    fillTemplate(ANALYSIS_PROMPT, baseVars),
+    1500
+  );
+  const analysis = normalizeAnalysis(safeParseJSON<BodyAnalysis>(analysisText));
+  const phase = analysis.recommendedPhase || 'ریکامپ';
+
+  const programVars = buildPromptVars(profile, phase);
+  const programText = await callAI(
+    fillTemplate(PROGRAM_PROMPT, programVars),
+    4096
+  );
+
+  const programData = safeParseJSON<{ weeklyPlan?: AIResult['program']['weeklyPlan'] }>(
+    programText
+  );
+  const weeklyPlan = Array.isArray(programData?.weeklyPlan)
+    ? programData.weeklyPlan
+    : [];
+
+  let nutrition: NutritionPlan | null = null;
+  if (profile.nutritionEnabled) {
+    const nutritionText = await callAI(
+      fillTemplate(NUTRITION_PROMPT, programVars),
+      3000
+    );
+    nutrition = safeParseJSON<NutritionPlan>(nutritionText);
+  }
+
+  return {
+    analysis,
+    program: { weeklyPlan },
+    nutrition,
   };
-
-  // هر دو را موازی اجرا کن
-  const [analysisText, programText] = await Promise.all([
-    callClaude(fillTemplate(ANALYSIS_PROMPT, vars)),
-    callClaude(fillTemplate(PROGRAM_PROMPT, vars)),
-  ]);
-
-  const analysis = safeParseJSON(analysisText) ?? {
-    bmi: 0,
-    bmiStatus: 'خطا در محاسبه',
-    recommendedPhase: 'نامشخص',
-    timeEstimate: 'نامشخص',
-    importantNote: 'لطفاً دوباره تلاش کنید',
-  };
-
-  const programData = safeParseJSON(programText);
-  const program = programData ?? { weeklyPlan: [] };
-
-  return { analysis, program };
 }
