@@ -72,6 +72,20 @@ export default function Home() {
           >
             برنامه رایگان بگیر ←
           </Button>
+          <button
+            type="button"
+            onClick={() => router.push('/login?mode=register')}
+            className="text-sm text-muted bg-transparent border-none cursor-pointer hover:text-primary transition-colors"
+          >
+            حساب نداری؟ ثبت‌نام
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/login')}
+            className="text-sm text-muted bg-transparent border-none cursor-pointer hover:text-primary transition-colors"
+          >
+            قبلاً ثبت‌نام کردی؟ ورود
+          </button>
           <p className="text-xs text-[#555] m-0">بدون ثبت‌نام · ۳۰ ثانیه</p>
         </div>
 

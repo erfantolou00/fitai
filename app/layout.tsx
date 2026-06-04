@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Vazirmatn } from 'next/font/google';
+import { AuthProvider } from '@/app/components/auth/auth-provider';
 import './globals.css';
 
 const vazirmatn = Vazirmatn({
@@ -26,7 +27,9 @@ export default function RootLayout({
       dir="rtl"
       className={`${vazirmatn.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

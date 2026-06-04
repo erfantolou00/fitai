@@ -7,32 +7,52 @@ import { Card, CardTitle, StatBox } from '@/app/components/ui/card';
 import { loadResult } from '@/app/lib/storage';
 import { cn } from '@/app/lib/utils/cn';
 import { AIResult, DEFAULT_ANALYSIS } from '@/app/types/user';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
-export default function ResultPage() {
+function ResultContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const planId = searchParams.get('id');
+
   const [result, setResult] = useState<AIResult | null>(null);
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fromCloud, setFromCloud] = useState(false);
 
   useEffect(() => {
     setTimeout(() => setMounted(true), 0);
-    try {
-      const parsed = loadResult();
-      if (!parsed) {
-        router.push('/onboarding');
-        return;
+
+    async function load() {
+      try {
+        if (planId) {
+          const res = await fetch(`/api/plans/${planId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setResult(data.result);
+            setFromCloud(true);
+            return;
+          }
+        }
+
+        const parsed = loadResult();
+        if (!parsed) {
+          router.push('/onboarding');
+          return;
+        }
+
+        if (!parsed.analysis) parsed.analysis = { ...DEFAULT_ANALYSIS };
+        if (!parsed.program) parsed.program = { weeklyPlan: [] };
+
+        setResult(parsed);
+      } catch {
+        setError('خطا در خواندن نتیجه');
       }
-
-      if (!parsed.analysis) parsed.analysis = { ...DEFAULT_ANALYSIS };
-      if (!parsed.program) parsed.program = { weeklyPlan: [] };
-
-      setResult(parsed);
-    } catch {
-      setError('خطا در خواندن نتیجه');
     }
-  }, [router]);
+
+    load();
+  }, [planId, router]);
 
   if (!mounted) return null;
 
@@ -67,8 +87,25 @@ export default function ResultPage() {
     <PageShell showBack title="برنامه شخصی">
       <SectionTitle
         title="برنامه شخصی تو"
-        subtitle="بر اساس اطلاعاتی که دادی ساخته شده"
+        subtitle={
+          fromCloud
+            ? 'از حساب کاربریت بارگذاری شد'
+            : 'بر اساس اطلاعاتی که دادی ساخته شده'
+        }
       />
+
+      {!fromCloud && (
+        <Alert variant="info" className="mb-4">
+          <Link href="/login?mode=register" className="text-info-dark underline">
+            ثبت‌نام کن
+          </Link>{' '}
+          یا{' '}
+          <Link href="/login" className="text-info-dark underline">
+            وارد شو
+          </Link>{' '}
+          تا برنامه‌ات ذخیره بشه.
+        </Alert>
+      )}
 
       <Card variant="success" className="mb-6">
         <CardTitle className="text-primary-dark mb-4">آنالیز بدنی</CardTitle>
@@ -225,11 +262,26 @@ export default function ResultPage() {
           >
             برنامه جدید
           </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => router.push('/plans')}
+          >
+            برنامه‌های من
+          </Button>
           <Button size="sm" onClick={() => router.push('/pricing')}>
             مشاهده پلن‌ها
           </Button>
         </div>
       </Card>
     </PageShell>
+  );
+}
+
+export default function ResultPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResultContent />
+    </Suspense>
   );
 }

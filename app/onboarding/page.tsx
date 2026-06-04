@@ -56,7 +56,7 @@ export default function OnboardingPage() {
       }
 
       saveResult(data, profile);
-      router.push('/result');
+      router.push(data.planId ? `/result?id=${data.planId}` : '/result');
     } catch {
       setError('خطایی رخ داد، دوباره تلاش کنید');
     } finally {

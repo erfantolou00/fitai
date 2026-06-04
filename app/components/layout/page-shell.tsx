@@ -1,5 +1,6 @@
 'use client';
 
+import { AuthNav } from '@/app/components/auth/auth-nav';
 import { cn } from '@/app/lib/utils/cn';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -84,9 +85,14 @@ export function PageShell({
                 </span>
               </Link>
             </div>
-            {title && (
-              <span className="text-sm text-muted font-medium">{title}</span>
-            )}
+            <div className="flex items-center gap-3">
+              {title && (
+                <span className="text-sm text-muted font-medium hidden sm:inline">
+                  {title}
+                </span>
+              )}
+              <AuthNav />
+            </div>
           </div>
         </header>
       )}

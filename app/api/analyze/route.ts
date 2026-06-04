@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateFullPlan } from '@/app/lib/ai/generate';
 import { AIProviderError, parseAIError } from '@/app/lib/ai/errors';
+import { saveFitnessProfile } from '@/app/lib/db/fitness-profiles';
+import { saveWorkoutPlan } from '@/app/lib/db/workout-plans';
+import { createClient } from '@/app/lib/supabase/server';
 import { DEFAULT_PROFILE, UserProfile } from '@/app/types/user';
 
 function validateProfile(data: unknown): UserProfile | null {
@@ -56,7 +59,29 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await generateFullPlan(profile);
-    return NextResponse.json(result);
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    let planId: string | undefined;
+
+    if (user) {
+      try {
+        const fitnessProfile = await saveFitnessProfile(user.id, profile);
+        const plan = await saveWorkoutPlan(
+          user.id,
+          result,
+          fitnessProfile.id
+        );
+        planId = plan.id;
+      } catch (dbError) {
+        console.error('DB save error:', dbError);
+      }
+    }
+
+    return NextResponse.json({ ...result, planId });
   } catch (error) {
     const aiError =
       error instanceof AIProviderError ? error : parseAIError(error);
