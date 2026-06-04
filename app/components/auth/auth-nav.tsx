@@ -4,11 +4,9 @@ import { useAuth } from '@/app/components/auth/auth-provider';
 import { Button } from '@/app/components/ui/button';
 import { usernameToDisplay } from '@/app/lib/auth/username';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 export function AuthNav() {
   const { user, profile, loading, signOut } = useAuth();
-  const router = useRouter();
 
   if (loading) {
     return <div className="w-16 h-8 bg-surface-muted rounded-lg animate-pulse" />;
@@ -18,13 +16,13 @@ export function AuthNav() {
     return (
       <div className="flex items-center gap-2">
         <Link
-          href="/plans"
+          href="/dashboard"
           className="text-xs text-muted hover:text-primary no-underline transition-colors"
         >
           {profile?.full_name ||
             (profile?.username
               ? usernameToDisplay(profile.username)
-              : 'برنامه‌های من')}
+              : 'داشبورد')}
         </Link>
         <Button
           variant="ghost"
@@ -32,7 +30,7 @@ export function AuthNav() {
           className="text-xs py-1.5 px-3"
           onClick={async () => {
             await signOut();
-            router.refresh();
+            window.location.href = '/';
           }}
         >
           خروج

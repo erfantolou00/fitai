@@ -11,6 +11,7 @@ interface AuthContextValue {
   loading: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  refreshAuth: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
   signOut: async () => {},
   refreshProfile: async () => {},
+  refreshAuth: async () => null,
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -39,16 +41,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [supabase]
   );
 
+  const refreshAuth = useCallback(async () => {
+    const { data: { user: u } } = await supabase.auth.getUser();
+    setUser(u);
+    if (u) await fetchProfile(u.id);
+    else setProfile(null);
+    setLoading(false);
+    return u;
+  }, [supabase, fetchProfile]);
+
   const refreshProfile = useCallback(async () => {
     if (user) await fetchProfile(user.id);
   }, [user, fetchProfile]);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user: u } }) => {
-      setUser(u);
-      if (u) fetchProfile(u.id);
-      setLoading(false);
-    });
+    refreshAuth();
 
     const {
       data: { subscription },
@@ -61,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase, fetchProfile]);
+  }, [supabase, fetchProfile, refreshAuth]);
 
   const signOut = async () => {
     await fetch('/api/auth/signout', { method: 'POST' });
@@ -72,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, signOut, refreshProfile }}
+      value={{ user, profile, loading, signOut, refreshProfile, refreshAuth }}
     >
       {children}
     </AuthContext.Provider>

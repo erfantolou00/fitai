@@ -4,17 +4,19 @@ import { PageShell, SectionTitle } from '@/app/components/layout/page-shell';
 import { Alert } from '@/app/components/ui/alert';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
+import { useAuth } from '@/app/components/auth/auth-provider';
 import { cn } from '@/app/lib/utils/cn';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 
 type AuthMode = 'login' | 'register';
 
 function AuthForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') ?? '/plans';
+  const redirect = searchParams.get('redirect') ?? '/dashboard';
   const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
+
+  const { refreshAuth } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [fullName, setFullName] = useState('');
@@ -54,8 +56,8 @@ function AuthForm() {
         return;
       }
 
-      router.push(redirect);
-      router.refresh();
+      await refreshAuth();
+      window.location.href = redirect;
     } catch {
       setError('خطایی رخ داد، دوباره تلاش کنید');
     } finally {

@@ -6,7 +6,7 @@ import { Alert } from '@/app/components/ui/alert';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface PlanSummary {
   id: string;
@@ -17,31 +17,40 @@ interface PlanSummary {
 }
 
 export default function PlansPage() {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { profile, refreshAuth } = useAuth();
   const router = useRouter();
   const [plans, setPlans] = useState<PlanSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (authLoading) return;
+  const loadPlans = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-    if (!user) {
-      router.push('/login?redirect=/plans');
+    const res = await fetch('/api/plans');
+
+    if (res.status === 401) {
+      router.replace('/login?redirect=/plans');
       return;
     }
 
-    fetch('/api/plans')
-      .then(async (res) => {
-        if (!res.ok) throw new Error('خطا در بارگذاری');
-        const data = await res.json();
-        setPlans(data.plans ?? []);
-      })
-      .catch(() => setError('خطا در بارگذاری برنامه‌ها'))
-      .finally(() => setLoading(false));
-  }, [user, authLoading, router]);
+    if (!res.ok) {
+      setError('خطا در بارگذاری برنامه‌ها');
+      setLoading(false);
+      return;
+    }
 
-  if (authLoading || (!user && !error)) {
+    const data = await res.json();
+    setPlans(data.plans ?? []);
+    await refreshAuth();
+    setLoading(false);
+  }, [router, refreshAuth]);
+
+  useEffect(() => {
+    loadPlans();
+  }, [loadPlans]);
+
+  if (loading) {
     return (
       <PageShell title="برنامه‌های من">
         <div className="text-center py-16 text-muted">در حال بارگذاری...</div>
@@ -62,9 +71,7 @@ export default function PlansPage() {
         </Alert>
       )}
 
-      {loading ? (
-        <div className="text-center py-12 text-muted">در حال بارگذاری...</div>
-      ) : plans.length === 0 ? (
+      {plans.length === 0 ? (
         <Card className="text-center py-10">
           <p className="text-muted m-0 mb-4">هنوز برنامه‌ای ذخیره نکردی</p>
           <Button onClick={() => router.push('/onboarding')}>
@@ -110,6 +117,9 @@ export default function PlansPage() {
       )}
 
       <div className="mt-8 flex gap-2">
+        <Button variant="secondary" fullWidth onClick={() => router.push('/dashboard')}>
+          داشبورد
+        </Button>
         <Button fullWidth onClick={() => router.push('/onboarding')}>
           برنامه جدید
         </Button>

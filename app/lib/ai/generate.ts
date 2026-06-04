@@ -90,7 +90,7 @@ async function callAI(prompt: string, maxTokens = 1500): Promise<string> {
 
   try {
     const response = await client.chat.completions.create({
-      model: 'gapgpt-qwen-3.6',
+      model: 'claude-opus-4-8',
       max_tokens: maxTokens,
       messages: [{ role: 'user', content: prompt }],
     });
