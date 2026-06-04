@@ -47,7 +47,16 @@ export default function PlansPage() {
   }, [router, refreshAuth]);
 
   useEffect(() => {
-    loadPlans();
+    const fetchData = async () => {
+      try {
+        await loadPlans();
+      } catch (error) {
+        console.error('Error fetching plans:', error);
+        setError('خطا در بارگذاری برنامه‌ها');
+        setLoading(false);
+      }
+    };
+    fetchData().catch(console.error);
   }, [loadPlans]);
 
   if (loading) {

@@ -55,7 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, fetchProfile]);
 
   useEffect(() => {
-    refreshAuth();
+    const fetchData = async () => {
+      try {
+        await refreshAuth();
+      } catch (error) {
+        console.error('Error fetching auth data:', error);
+        setLoading(false);
+      }
+    };
+    fetchData().catch(console.error);
 
     const {
       data: { subscription },

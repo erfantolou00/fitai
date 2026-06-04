@@ -76,7 +76,17 @@ export default function DashboardPage() {
   }, [router, refreshAuth]);
 
   useEffect(() => {
-    loadDashboard();
+    const fetchData = async () => {
+      try {
+        await loadDashboard();
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setError('خطا در بارگذاری داشبورد');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData().catch(console.error);
   }, [loadDashboard]);
 
   if (loading) {

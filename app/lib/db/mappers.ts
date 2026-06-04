@@ -1,4 +1,4 @@
-import { UserProfile, AIResult } from '@/app/types/user';
+import { UserProfile, AIResult, BodyAnalysis } from '@/app/types/user';
 import { DbFitnessProfile, DbWorkoutPlan } from '@/app/types/database';
 
 export function profileToDb(
@@ -63,7 +63,7 @@ export function resultToDbPlan(
 
 export function dbToResult(row: DbWorkoutPlan): AIResult {
   return {
-    analysis: row.analysis as AIResult['analysis'],
+    analysis: row.analysis as unknown as BodyAnalysis,
     program: row.program as AIResult['program'],
     nutrition: row.nutrition as AIResult['nutrition'],
   };
