@@ -145,7 +145,7 @@ export function StepProgress({
 
 export function LoadingOverlay({ message }: { message?: string }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <div className="text-center px-6">
         <div className="w-12 h-12 mx-auto mb-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
         <p className="text-sm text-muted">{message ?? 'در حال پردازش...'}</p>

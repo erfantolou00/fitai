@@ -32,7 +32,7 @@ export default function PricingPage() {
             className={cn(
               'relative flex flex-col',
               plan.highlighted &&
-                'border-primary border-2 shadow-[var(--shadow-md)] scale-[1.02]'
+                'border-primary border-2 shadow-(--shadow-md) scale-[1.02]'
             )}
           >
             {plan.highlighted && (

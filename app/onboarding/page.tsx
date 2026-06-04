@@ -263,7 +263,7 @@ export default function OnboardingPage() {
           </Button>
         )}
         {step < ONBOARDING_STEPS.length - 1 ? (
-          <Button fullWidth className={step === 0 ? 'flex-[2]' : ''} onClick={next}>
+          <Button fullWidth className={step === 0 ? 'flex-2' : ''} onClick={next}>
             بعدی
           </Button>
         ) : (
