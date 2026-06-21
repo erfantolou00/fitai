@@ -1,103 +1,87 @@
 'use client';
 
-import { Badge } from '@/app/components/ui/alert';
 import { Button } from '@/app/components/ui/button';
-import { PageShell } from '@/app/components/layout/page-shell';
 import { useRouter } from 'next/navigation';
-
-const FEATURES = [
-  { icon: '🎯', text: 'برنامه شخصی' },
-  { icon: '🧬', text: 'آنالیز بدنی' },
-  { icon: '🥗', text: 'تغذیه ایرانی' },
-  { icon: '📸', text: 'کالری از عکس' },
-] as const;
-
-const STATS = [
-  { num: '۵ دقیقه', label: 'زمان تنظیم' },
-  { num: '۱۰۰٪', label: 'شخصی‌سازی' },
-  { num: 'رایگان', label: 'برای همیشه' },
-] as const;
 
 export default function Home() {
   const router = useRouter();
 
   return (
-    <PageShell variant="dark" maxWidth="lg" showHeader={false}>
-      <div className="relative min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center text-center py-12">
-        <div
-          className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(circle, rgba(29,158,117,0.15) 0%, transparent 70%)',
-          }}
-        />
+    <div className="relative min-h-screen flex flex-col bg-[#060606] text-white overflow-hidden">
+      {/* Grid pattern */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(29,158,117,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(29,158,117,0.8) 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+        }}
+      />
 
-        <div className="animate-fade-up relative z-10 mb-10">
-          <Badge
-            variant="primary"
-            className="mb-8 bg-primary/10 border-primary/30 text-primary"
-          >
-            <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
-            هوش مصنوعی ورزشی
-          </Badge>
+      {/* Glow orbs */}
+      <div
+        className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(29,158,117,0.18) 0%, transparent 65%)',
+        }}
+      />
+      <div
+        className="absolute bottom-[5%] right-[-10%] w-[400px] h-[400px] pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%)',
+        }}
+      />
 
-          <h1 className="text-[clamp(2.5rem,8vw,5rem)] font-extrabold text-white m-0 leading-tight tracking-tight">
+      {/* Diagonal accent line */}
+      <div className="absolute top-0 right-0 w-1/3 h-full pointer-events-none overflow-hidden opacity-10">
+        <div className="absolute top-[-20%] right-[-30%] w-[200%] h-[140%] border-l-2 border-primary rotate-[-15deg]" />
+      </div>
+
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
+        <div className="animate-fade-up mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm font-medium mb-8">
+            <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--primary)] animate-pulse" />
+            باشگاه هوشمند
+          </div>
+
+          <h1 className="text-[clamp(3rem,10vw,5.5rem)] font-extrabold m-0 leading-none tracking-tight">
             فیتار<span className="text-primary">.</span>
           </h1>
-          <p className="text-[clamp(1rem,3vw,1.25rem)] text-muted mt-4 max-w-md mx-auto leading-relaxed">
-            برنامه تمرینی شخصی‌سازی‌شده با هوش مصنوعی
+          <p className="text-[clamp(1rem,3vw,1.2rem)] text-[#888] mt-5 max-w-sm mx-auto leading-relaxed m-0">
+            تمرین شخصی‌سازی‌شده
             <br />
-            بدون مربی، بدون کاغذ A4
+            با هوش مصنوعی
           </p>
         </div>
 
-        <div className="animate-fade-up-delay-1 relative z-10 flex gap-3 flex-wrap justify-center mb-10">
-          {FEATURES.map(({ icon, text }) => (
-            <Badge
-              key={text}
-              variant="outline"
-              className="bg-white/5 border-white/10 text-[#aaa]"
-            >
-              <span className="text-base">{icon}</span>
-              {text}
-            </Badge>
-          ))}
-        </div>
-
-        <div className="animate-fade-up-delay-2 relative z-10 flex flex-col items-center gap-4">
+        <div className="animate-fade-up-delay-1 flex flex-col sm:flex-row gap-3 w-full max-w-xs sm:max-w-sm">
           <Button
             size="lg"
-            className="animate-pulse-glow"
-            onClick={() => router.push('/onboarding')}
-          >
-            برنامه رایگان بگیر ←
-          </Button>
-          <button
-            type="button"
+            className="animate-pulse-glow w-full"
             onClick={() => router.push('/login?mode=register')}
-            className="text-sm text-muted bg-transparent border-none cursor-pointer hover:text-primary transition-colors"
           >
-            حساب نداری؟ ثبت‌نام
-          </button>
-          <button
-            type="button"
+            ثبت‌نام
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full border-white/20 text-white hover:border-primary hover:text-primary"
             onClick={() => router.push('/login')}
-            className="text-sm text-muted bg-transparent border-none cursor-pointer hover:text-primary transition-colors"
           >
-            قبلاً ثبت‌نام کردی؟ ورود
-          </button>
-          <p className="text-xs text-[#555] m-0">بدون ثبت‌نام · ۳۰ ثانیه</p>
+            ورود
+          </Button>
         </div>
 
-        <div className="animate-fade-up-delay-3 relative z-10 mt-16 flex gap-10">
-          {STATS.map(({ num, label }) => (
-            <div key={label} className="text-center">
-              <div className="text-lg font-bold text-white">{num}</div>
-              <div className="text-[11px] text-[#555] mt-0.5">{label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </PageShell>
+        <p className="animate-fade-up-delay-2 text-xs text-[#444] mt-10 m-0 tracking-wide">
+          تمرین · تغذیه · پیشرفت
+        </p>
+      </main>
+
+      <footer className="relative z-10 py-6 text-center text-[11px] text-[#333]">
+        © فیتار — هوش مصنوعی ورزشی
+      </footer>
+    </div>
   );
 }

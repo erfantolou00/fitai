@@ -9,6 +9,10 @@ export interface DbProfile {
   avatar_url: string | null;
   auth_provider: AuthProvider | null;
   onboarding_completed: boolean;
+  default_plan_id: string | null;
+  free_trial_expires_at: string | null;
+  nutrition_paid: boolean;
+  paid_plan_credits: number;
   created_at: string;
   updated_at: string;
 }

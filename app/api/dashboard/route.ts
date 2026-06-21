@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { dbToProfile } from '@/app/lib/db/mappers';
-import { getActiveFitnessProfile } from '@/app/lib/db/fitness-profiles';
 import { getProfile } from '@/app/lib/db/profiles';
-import { getLatestWorkoutPlan, listWorkoutPlans } from '@/app/lib/db/workout-plans';
+import { getActiveFitnessProfile } from '@/app/lib/db/fitness-profiles';
+import { getDefaultWorkoutPlan, listWorkoutPlans } from '@/app/lib/db/workout-plans';
 import { getDailyTips } from '@/app/lib/constants/dashboard-content';
 import { GOAL_LABELS, LEVEL_LABELS, LOCATION_LABELS } from '@/app/lib/constants/labels';
 import { createClient } from '@/app/lib/supabase/server';
@@ -18,10 +18,11 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const [profile, fitness, latest, plans] = await Promise.all([
-    getProfile(user.id),
+  const profile = await getProfile(user.id);
+
+  const [fitness, latest, plans] = await Promise.all([
     getActiveFitnessProfile(user.id),
-    getLatestWorkoutPlan(user.id),
+    getDefaultWorkoutPlan(user.id, profile?.default_plan_id ?? null),
     listWorkoutPlans(user.id),
   ]);
 
@@ -61,8 +62,15 @@ export async function GET() {
           createdAt: latest.plan.created_at,
           importantNote: analysis?.importantNote ?? null,
           hasNutrition: !!latest.result.nutrition,
+          isDefault: latest.plan.id === profile?.default_plan_id,
         }
       : null,
+    billing: {
+      freeTrialExpiresAt: profile?.free_trial_expires_at ?? null,
+      nutritionPaid: profile?.nutrition_paid ?? false,
+      paidPlanCredits: profile?.paid_plan_credits ?? 0,
+      defaultPlanId: profile?.default_plan_id ?? null,
+    },
     tips,
   });
 }

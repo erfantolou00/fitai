@@ -16,17 +16,42 @@ import {
   LOCATION_LABELS,
   ONBOARDING_STEPS,
 } from '@/app/lib/constants/labels';
-import { saveResult } from '@/app/lib/storage';
+import { saveResult, savePendingProfile, loadPendingProfile, clearPendingProfile } from '@/app/lib/storage';
 import { DEFAULT_PROFILE, UserProfile } from '@/app/types/user';
+import { Toggle } from '@/app/components/ui/toggle';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+interface Entitlements {
+  planCount: number;
+  canCreateFreePlan: boolean;
+  canCreatePlan: boolean;
+  canUseNutrition: boolean;
+  isLoggedIn: boolean;
+  nutritionPaid: boolean;
+}
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
+  const [profile, setProfile] = useState<UserProfile>(() => loadPendingProfile() ?? DEFAULT_PROFILE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [entitlements, setEntitlements] = useState<Entitlements | null>(null);
+
+  useEffect(() => {
+    fetch('/api/entitlements')
+      .then((r) => r.json())
+      .then(setEntitlements)
+      .catch(() => null);
+  }, []);
+
+  useEffect(() => {
+    if (loadPendingProfile()) {
+      setStep(ONBOARDING_STEPS.length - 1);
+      clearPendingProfile();
+    }
+  }, []);
 
   const update = <K extends keyof UserProfile>(key: K, value: UserProfile[K]) =>
     setProfile((prev) => ({ ...prev, [key]: value }));
@@ -47,6 +72,18 @@ export default function OnboardingPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.code === 'payment_required' && data.product) {
+          savePendingProfile(profile);
+          router.push(
+            `/checkout?product=${data.product}&return=${encodeURIComponent('/onboarding')}`
+          );
+          return;
+        }
+        if (data.code === 'login_required') {
+          savePendingProfile(profile);
+          router.push(`/login?redirect=${encodeURIComponent('/onboarding')}`);
+          return;
+        }
         const hint =
           data.code === 'quota_exhausted'
             ? ' (مشکل از سمت سرور AI است، نه فرم شما)'
@@ -213,19 +250,33 @@ export default function OnboardingPage() {
       {step === 4 && (
         <div className="flex flex-col gap-4">
           <SectionTitle title="تغذیه" />
-          <div>
-            <span className="block text-sm mb-1.5">
-              آیا برنامه تغذیه هم می‌خواهی؟
-            </span>
-            <SelectChip
-              options={[
-                { value: true, label: 'بله، می‌خوام' },
-                { value: false, label: 'فعلاً نه' },
-              ]}
-              value={profile.nutritionEnabled}
-              onChange={(v) => update('nutritionEnabled', v)}
-            />
-          </div>
+
+          {entitlements && !entitlements.canCreateFreePlan && !entitlements.canCreatePlan && (
+            <Alert variant="warning">
+              برنامه اول رایگان بود. برای برنامه جدید باید پرداخت کنی.
+            </Alert>
+          )}
+
+          <Toggle
+            checked={profile.nutritionEnabled}
+            onChange={(v) => update('nutritionEnabled', v)}
+            label="برنامه تغذیه ایرانی"
+            description={
+              profile.nutritionEnabled
+                ? entitlements?.nutritionPaid
+                  ? 'پرداخت تغذیه انجام شده — برنامه غذایی هم ساخته می‌شود'
+                  : 'فعال‌سازی تغذیه نیاز به پرداخت جداگانه دارد (حتی در برنامه اول)'
+                : 'فقط برنامه تمرینی — رایگان برای اولین برنامه'
+            }
+          />
+
+          {profile.nutritionEnabled && !entitlements?.nutritionPaid && (
+            <Alert variant="warning">
+              برنامه تغذیه در نسخه رایگان نیست. با زدن «ساخت برنامه»، به صفحه
+              پرداخت هدایت می‌شوی.
+            </Alert>
+          )}
+
           {profile.nutritionEnabled && (
             <>
               <div>
@@ -249,9 +300,13 @@ export default function OnboardingPage() {
               />
             </>
           )}
-          <Alert variant="warning">
-            آماده‌ای؟ وقتی دکمه رو بزنی، AI در حدود ۵–۱۵ ثانیه یک برنامه کامل
-            شخصی‌سازی‌شده برات می‌سازه.
+
+          <Alert variant="info">
+            {entitlements?.canCreateFreePlan
+              ? 'اولین برنامه تمرینی یک ماه رایگان است. برنامه‌های بعدی پولی هستند.'
+              : entitlements?.canCreatePlan
+                ? 'یک اعتبار برنامه پولی داری — آماده ساخت.'
+                : 'برای ساخت برنامه جدید، ابتدا پرداخت کن.'}
           </Alert>
         </div>
       )}

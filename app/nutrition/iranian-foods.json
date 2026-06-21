@@ -1,0 +1,359 @@
+[
+  {
+    "id": "rice_white_cooked",
+    "name": "برنج سفید پخته شده",
+    "name_en": "White Rice (Cooked)",
+    "category": "grains",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 130,
+      "protein": 2.7,
+      "carbs": 28,
+      "fat": 0.3,
+      "fiber": 0.4,
+      "water": 68.5
+    },
+    "notes": "برنج معمولی ایران"
+  },
+  {
+    "id": "chickpea_cooked",
+    "name": "نخود پخته شده",
+    "name_en": "Chickpea (Cooked)",
+    "category": "legumes",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 134,
+      "protein": 8.86,
+      "carbs": 22.5,
+      "fat": 2.59,
+      "fiber": 6.2,
+      "water": 60
+    },
+    "notes": "نخود خام 50g"
+  },
+  {
+    "id": "yogurt_plain_full_fat",
+    "name": "ماست طبیعی",
+    "name_en": "Plain Yogurt (Full Fat)",
+    "category": "dairy",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 61,
+      "protein": 3.5,
+      "carbs": 4.7,
+      "fat": 3.3,
+      "fiber": 0,
+      "water": 88.5
+    },
+    "notes": "ماست پرچرب"
+  },
+  {
+    "id": "chicken_breast_cooked",
+    "name": "سینه مرغ پخته شده",
+    "name_en": "Chicken Breast (Cooked)",
+    "category": "proteins",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 165,
+      "protein": 31,
+      "carbs": 0,
+      "fat": 3.6,
+      "fiber": 0,
+      "water": 65.4
+    },
+    "notes": "مرغ بدون پوست پخت‌شده"
+  },
+  {
+    "id": "egg_whole_cooked",
+    "name": "تخم مرغ پخته شده",
+    "name_en": "Egg (Whole, Cooked)",
+    "category": "proteins",
+    "portion_size": 50,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 78,
+      "protein": 6.3,
+      "carbs": 0.6,
+      "fat": 5.3,
+      "fiber": 0,
+      "water": 37.2
+    },
+    "notes": "یک تخم مرغ متوسط"
+  },
+  {
+    "id": "lentil_red_cooked",
+    "name": "عدس قرمز پخته شده",
+    "name_en": "Red Lentil (Cooked)",
+    "category": "legumes",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 116,
+      "protein": 9,
+      "carbs": 20,
+      "fat": 0.4,
+      "fiber": 1.9,
+      "water": 69.5
+    },
+    "notes": "عدس قرمز پخته‌شده"
+  },
+  {
+    "id": "olive_oil",
+    "name": "روغن زیتون",
+    "name_en": "Olive Oil",
+    "category": "oils",
+    "portion_size": 14,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 119,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 13.5,
+      "fiber": 0,
+      "water": 0
+    },
+    "notes": "یک قاشق غذاخوری"
+  },
+  {
+    "id": "bread_whole_wheat",
+    "name": "نان گندم سیاه",
+    "name_en": "Whole Wheat Bread",
+    "category": "grains",
+    "portion_size": 30,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 80,
+      "protein": 3.6,
+      "carbs": 14,
+      "fat": 1.0,
+      "fiber": 2.1,
+      "water": 37.3
+    },
+    "notes": "یک تکه نان گندم سیاه"
+  },
+  {
+    "id": "tomato_fresh",
+    "name": "گوجه فرنگی تازه",
+    "name_en": "Tomato (Fresh)",
+    "category": "vegetables",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 18,
+      "protein": 0.9,
+      "carbs": 3.9,
+      "fat": 0.2,
+      "fiber": 1.2,
+      "water": 94.5
+    },
+    "notes": "گوجه فرنگی تازه"
+  },
+  {
+    "id": "cucumber_fresh",
+    "name": "خیار تازه",
+    "name_en": "Cucumber (Fresh)",
+    "category": "vegetables",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 16,
+      "protein": 0.7,
+      "carbs": 3.6,
+      "fat": 0.1,
+      "fiber": 0.5,
+      "water": 95.2
+    },
+    "notes": "خیار تازه"
+  },
+  {
+    "id": "walnut",
+    "name": "گردو",
+    "name_en": "Walnut",
+    "category": "nuts",
+    "portion_size": 14,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 93,
+      "protein": 2.1,
+      "carbs": 1.9,
+      "fat": 9.5,
+      "fiber": 0.4,
+      "water": 4.7
+    },
+    "notes": "مشت کوچک گردو"
+  },
+  {
+    "id": "spinach_cooked",
+    "name": "اسفناج پخته شده",
+    "name_en": "Spinach (Cooked)",
+    "category": "vegetables",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 23,
+      "protein": 2.9,
+      "carbs": 3.7,
+      "fat": 0.4,
+      "fiber": 2.2,
+      "water": 91.6
+    },
+    "notes": "اسفناج پخته‌شده"
+  },
+  {
+    "id": "fish_salmon_cooked",
+    "name": "ماهی قزل‌آلا پخته شده",
+    "name_en": "Salmon (Cooked)",
+    "category": "proteins",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 206,
+      "protein": 22,
+      "carbs": 0,
+      "fat": 12.3,
+      "fiber": 0,
+      "water": 64.2
+    },
+    "notes": "ماهی سالمون پخته‌شده"
+  },
+  {
+    "id": "cheese_white_fresh",
+    "name": "پنیر سفید تازه",
+    "name_en": "Fresh White Cheese",
+    "category": "dairy",
+    "portion_size": 30,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 75,
+      "protein": 6.1,
+      "carbs": 1.1,
+      "fat": 5.8,
+      "fiber": 0,
+      "water": 51.6
+    },
+    "notes": "پنیر سفید ایرانی"
+  },
+  {
+    "id": "almond",
+    "name": "بادام",
+    "name_en": "Almond",
+    "category": "nuts",
+    "portion_size": 23,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 134,
+      "protein": 5,
+      "carbs": 5,
+      "fat": 12,
+      "fiber": 3.1,
+      "water": 4.4
+    },
+    "notes": "یک مشت بادام"
+  },
+  {
+    "id": "banana",
+    "name": "موز",
+    "name_en": "Banana",
+    "category": "fruits",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 89,
+      "protein": 1.1,
+      "carbs": 23,
+      "fat": 0.3,
+      "fiber": 2.6,
+      "water": 74.9
+    },
+    "notes": "موز متوسط"
+  },
+  {
+    "id": "apple",
+    "name": "سیب",
+    "name_en": "Apple",
+    "category": "fruits",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 52,
+      "protein": 0.3,
+      "carbs": 13.8,
+      "fat": 0.2,
+      "fiber": 2.4,
+      "water": 85.6
+    },
+    "notes": "سیب متوسط"
+  },
+  {
+    "id": "honey",
+    "name": "عسل",
+    "name_en": "Honey",
+    "category": "condiments",
+    "portion_size": 21,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 64,
+      "protein": 0,
+      "carbs": 17.3,
+      "fat": 0,
+      "fiber": 0,
+      "water": 17.1
+    },
+    "notes": "یک قاشق غذاخوری"
+  },
+  {
+    "id": "milk_whole",
+    "name": "شیر پرچرب",
+    "name_en": "Whole Milk",
+    "category": "dairy",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 61,
+      "protein": 3.2,
+      "carbs": 4.8,
+      "fat": 3.3,
+      "fiber": 0,
+      "water": 87.6
+    },
+    "notes": "شیر پرچرب"
+  },
+  {
+    "id": "beef_lean_cooked",
+    "name": "گوشت گاو لاغر پخته شده",
+    "name_en": "Lean Beef (Cooked)",
+    "category": "proteins",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 180,
+      "protein": 26,
+      "carbs": 0,
+      "fat": 8,
+      "fiber": 0,
+      "water": 65
+    },
+    "notes": "گوشت گاو لاغر"
+  },
+  {
+    "id": "pomegranate",
+    "name": "انار",
+    "name_en": "Pomegranate",
+    "category": "fruits",
+    "portion_size": 100,
+    "portion_unit": "g",
+    "nutrition": {
+      "calories": 64,
+      "protein": 1.7,
+      "carbs": 14.3,
+      "fat": 0.3,
+      "fiber": 2,
+      "water": 82.3
+    },
+    "notes": "دانه‌های انار"
+  }
+]

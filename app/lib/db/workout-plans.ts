@@ -48,6 +48,28 @@ export async function listWorkoutPlans(userId: string): Promise<DbWorkoutPlan[]>
   return data ?? [];
 }
 
+export async function countWorkoutPlans(userId: string): Promise<number> {
+  const admin = createAdminClient();
+  const { count, error } = await admin
+    .from('workout_plans')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export async function getDefaultWorkoutPlan(
+  userId: string,
+  defaultPlanId: string | null
+): Promise<{ plan: DbWorkoutPlan; result: AIResult } | null> {
+  if (defaultPlanId) {
+    const plan = await getWorkoutPlan(defaultPlanId, userId);
+    if (plan) return { plan, result: dbToResult(plan) };
+  }
+  return getLatestWorkoutPlan(userId);
+}
+
 export async function getLatestWorkoutPlan(
   userId: string
 ): Promise<{ plan: DbWorkoutPlan; result: AIResult } | null> {

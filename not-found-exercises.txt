@@ -1,0 +1,51 @@
+حرکاتی که در دیتابیس پیدا نشدند (44 مورد):
+
+  [chest] Incline Barbell Press → پرس سینه بالا سینه هالتر
+  [chest] Decline Barbell Press → پرس سینه پایین سینه هالتر
+  [chest] Dumbbell Fly → فلای سینه دمبل
+  [chest] Incline Dumbbell Fly → فلای سینه بالا سینه دمبل
+  [chest] Cable Chest Fly → قفسه سینه با کابل (کراس‌اور)
+  [chest] Low Cable Fly → کراس‌اور پایین به بالا
+  [chest] High Cable Fly → کراس‌اور بالا به پایین
+  [chest] Pec Deck Machine → دستگاه پک دک (پروانه)
+  [chest] Machine Chest Press → پرس سینه دستگاه
+  [back] Lat Pulldown → زیر بغل از بالا (لت)
+  [back] Pendlay Row → زیر بغل پندلی
+  [back] Seated Cable Row → زیر بغل نشسته با کابل
+  [back] Deadlift → ددلیفت
+  [back] Hyperextension → حرکت هایپراکستنشن (کمر)
+  [back] Machine Row → زیر بغل دستگاه
+  [shoulders] Barbell Overhead Press → پرس سرشانه هالتر
+  [shoulders] Reverse Pec Deck → پشت شانه دستگاه پروانه
+  [shoulders] Shrugs → شراگ (بالا انداختن شانه)
+  [arms] Cable Bicep Curl → جلوبازو با کابل
+  [arms] Tricep Pushdown → پشت بازو با کابل (پشت بازو سیم‌کش)
+  [arms] Rope Tricep Pushdown → پشت بازو طناب
+  [arms] Overhead Tricep Extension → پشت بازو از بالای سر
+  [arms] Tricep Dips → دیپ پشت بازو
+  [legs] Stiff Leg Deadlift → ددلیفت پا صاف
+  [legs] Bulgarian Split Squat → اسکوات تک‌پا بلغاری
+  [legs] Cable Kickback → پشت پا با کابل (کیک‌بک)
+  [legs] Hip Abduction Machine → دستگاه باز کننده ران (ابداکتور)
+  [legs] Hip Adduction Machine → دستگاه نزدیک کننده ران (ادداکتور)
+  [core] Side Plank → پلانک جانبی
+  [core] Crunch → کرانچ شکم
+  [core] Bicycle Crunch → کرانچ دوچرخه
+  [core] Hanging Knee Raise → بالا آوردن زانو آویزان
+  [core] Ab Wheel Rollout → غلتک شکم (اب ویل)
+  [core] Mountain Climber → کوهنورد
+  [core] V-Up → وی‌آپ
+  [cardio] Treadmill Incline Walk → پیاده‌روی شیب‌دار روی تردمیل
+  [cardio] Jump Rope → طناب زدن
+  [cardio] Burpee → برپی
+  [cardio] Rowing Machine → دستگاه روئینگ
+  [cardio] Cycling → دوچرخه ثابت
+  [cardio] Elliptical → دستگاه الپتیکال
+  [cardio] Stair Climber → دستگاه پله (استپر)
+  [cardio] Jumping Jacks → جامپینگ جک
+  [cardio] High Knees → بالا آوردن زانو در جا
+
+این حرکات را می‌توانی:
+  - با اسم دیگری در دیتابیس جستجو کنی (شاید اسم متفاوتی دارند)
+  - به صورت دستی به جدول exercises اضافه کنی
+  - برایشان GIF/ویدیو جدا تهیه کنی

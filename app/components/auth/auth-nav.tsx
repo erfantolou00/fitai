@@ -16,7 +16,7 @@ export function AuthNav() {
     return (
       <div className="flex items-center gap-2">
         <Link
-          href="/dashboard"
+          href="/home"
           className="text-xs text-muted hover:text-primary no-underline transition-colors"
         >
           {profile?.full_name ||

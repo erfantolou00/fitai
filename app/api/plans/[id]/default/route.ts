@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbToResult, getWorkoutPlan } from '@/app/lib/db/workout-plans';
-import { getProfile } from '@/app/lib/db/profiles';
+import { getWorkoutPlan } from '@/app/lib/db/workout-plans';
+import { setDefaultPlan } from '@/app/lib/db/profiles';
 import { createClient } from '@/app/lib/supabase/server';
 
-export async function GET(
+export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -22,15 +22,7 @@ export async function GET(
     return NextResponse.json({ error: 'برنامه یافت نشد' }, { status: 404 });
   }
 
-  const profile = await getProfile(user.id);
+  await setDefaultPlan(user.id, id);
 
-  return NextResponse.json({
-    result: dbToResult(plan),
-    meta: {
-      id: plan.id,
-      title: plan.title,
-      createdAt: plan.created_at,
-      isDefault: profile?.default_plan_id === plan.id,
-    },
-  });
+  return NextResponse.json({ success: true, defaultPlanId: id });
 }

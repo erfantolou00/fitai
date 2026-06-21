@@ -1,6 +1,10 @@
 import OpenAI from 'openai';
 import { parseAIError } from './errors';
 import {
+  loadCoreExercisesForPrompt,
+  loadFoodsForPrompt,
+} from './catalog';
+import {
   ANALYSIS_PROMPT,
   NUTRITION_PROMPT,
   PROGRAM_PROMPT,
@@ -122,7 +126,10 @@ export async function generateFullPlan(profile: UserProfile): Promise<AIResult> 
   const analysis = normalizeAnalysis(safeParseJSON<BodyAnalysis>(analysisText));
   const phase = analysis.recommendedPhase || 'ریکامپ';
 
-  const programVars = buildPromptVars(profile, phase);
+  const programVars = {
+    ...buildPromptVars(profile, phase),
+    exerciseList: loadCoreExercisesForPrompt(),
+  };
   const programText = await callAI(
     fillTemplate(PROGRAM_PROMPT, programVars),
     4096
@@ -137,8 +144,12 @@ export async function generateFullPlan(profile: UserProfile): Promise<AIResult> 
 
   let nutrition: NutritionPlan | null = null;
   if (profile.nutritionEnabled) {
+    const nutritionVars = {
+      ...programVars,
+      foodList: loadFoodsForPrompt(),
+    };
     const nutritionText = await callAI(
-      fillTemplate(NUTRITION_PROMPT, programVars),
+      fillTemplate(NUTRITION_PROMPT, nutritionVars),
       3000
     );
     nutrition = safeParseJSON<NutritionPlan>(nutritionText);

@@ -3,6 +3,7 @@ import { AIResult, UserProfile } from '@/app/types/user';
 const KEYS = {
   result: 'fitai_result',
   profile: 'fitai_profile',
+  pendingProfile: 'fitai_pending_profile',
 } as const;
 
 export function saveResult(result: AIResult, profile: UserProfile): void {
@@ -33,4 +34,23 @@ export function loadProfile(): UserProfile | null {
 export function clearFitaiData(): void {
   localStorage.removeItem(KEYS.result);
   localStorage.removeItem(KEYS.profile);
+  localStorage.removeItem(KEYS.pendingProfile);
+}
+
+export function savePendingProfile(profile: UserProfile): void {
+  localStorage.setItem(KEYS.pendingProfile, JSON.stringify(profile));
+}
+
+export function loadPendingProfile(): UserProfile | null {
+  try {
+    const raw = localStorage.getItem(KEYS.pendingProfile);
+    if (!raw) return null;
+    return JSON.parse(raw) as UserProfile;
+  } catch {
+    return null;
+  }
+}
+
+export function clearPendingProfile(): void {
+  localStorage.removeItem(KEYS.pendingProfile);
 }

@@ -1,10 +1,11 @@
 'use client';
 
-import { useAuth } from '@/app/components/auth/auth-provider';
-import { PageShell, SectionTitle } from '@/app/components/layout/page-shell';
+import { SectionTitle } from '@/app/components/layout/page-shell';
 import { Alert } from '@/app/components/ui/alert';
+import { Badge } from '@/app/components/ui/alert';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
+import { useAuth } from '@/app/components/auth/auth-provider';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -14,12 +15,20 @@ interface PlanSummary {
   createdAt: string;
   hasNutrition: boolean;
   phase?: string;
+  isDefault?: boolean;
+}
+
+interface Entitlements {
+  canCreatePlan: boolean;
+  canCreateFreePlan: boolean;
+  planCount: number;
 }
 
 export default function PlansPage() {
-  const { profile, refreshAuth } = useAuth();
+  const { profile } = useAuth();
   const router = useRouter();
   const [plans, setPlans] = useState<PlanSummary[]>([]);
+  const [entitlements, setEntitlements] = useState<Entitlements | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,52 +36,60 @@ export default function PlansPage() {
     setLoading(true);
     setError(null);
 
-    const res = await fetch('/api/plans');
+    const [plansRes, entRes] = await Promise.all([
+      fetch('/api/plans'),
+      fetch('/api/entitlements'),
+    ]);
 
-    if (res.status === 401) {
-      router.replace('/login?redirect=/plans');
-      return;
-    }
-
-    if (!res.ok) {
+    if (!plansRes.ok) {
       setError('خطا در بارگذاری برنامه‌ها');
       setLoading(false);
       return;
     }
 
-    const data = await res.json();
-    setPlans(data.plans ?? []);
-    await refreshAuth();
+    const plansData = await plansRes.json();
+    setPlans(plansData.plans ?? []);
+
+    if (entRes.ok) {
+      setEntitlements(await entRes.json());
+    }
+
     setLoading(false);
-  }, [router, refreshAuth]);
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await loadPlans();
-      } catch (error) {
-        console.error('Error fetching plans:', error);
-        setError('خطا در بارگذاری برنامه‌ها');
-        setLoading(false);
-      }
-    };
-    fetchData().catch(console.error);
+    loadPlans().catch(() => {
+      setError('خطا در بارگذاری برنامه‌ها');
+      setLoading(false);
+    });
   }, [loadPlans]);
 
+  const handleNewPlan = () => {
+    if (entitlements && !entitlements.canCreatePlan) {
+      router.push(`/checkout?product=new_plan&return=${encodeURIComponent('/onboarding')}`);
+      return;
+    }
+    router.push('/onboarding');
+  };
+
   if (loading) {
-    return (
-      <PageShell title="برنامه‌های من">
-        <div className="text-center py-16 text-muted">در حال بارگذاری...</div>
-      </PageShell>
-    );
+    return <div className="text-center py-16 text-muted">در حال بارگذاری...</div>;
   }
 
   return (
-    <PageShell title="برنامه‌های من" maxWidth="md">
+    <>
       <SectionTitle
         title={`سلام${profile?.full_name ? ` ${profile.full_name.split(' ')[0]}` : ''}!`}
         subtitle="برنامه‌های ذخیره‌شده‌ات"
       />
+
+      {entitlements && !entitlements.canCreateFreePlan && entitlements.planCount > 0 && (
+        <Alert variant="info" className="mb-4">
+          {entitlements.canCreatePlan
+            ? `${entitlements.planCount} برنامه داری — یک اعتبار پولی برای برنامه جدید`
+            : 'برنامه اول رایگان بود. برای برنامه جدید پرداخت لازم است.'}
+        </Alert>
+      )}
 
       {error && (
         <Alert variant="danger" className="mb-4">
@@ -83,9 +100,7 @@ export default function PlansPage() {
       {plans.length === 0 ? (
         <Card className="text-center py-10">
           <p className="text-muted m-0 mb-4">هنوز برنامه‌ای ذخیره نکردی</p>
-          <Button onClick={() => router.push('/onboarding')}>
-            ساخت اولین برنامه
-          </Button>
+          <Button onClick={handleNewPlan}>ساخت اولین برنامه (رایگان)</Button>
         </Card>
       ) : (
         <div className="flex flex-col gap-3">
@@ -98,10 +113,17 @@ export default function PlansPage() {
             >
               <div className="flex justify-between items-start gap-3">
                 <div>
-                  <p className="font-semibold m-0 text-[15px]">
-                    {plan.title ?? 'برنامه تمرینی'}
-                  </p>
-                  <p className="text-xs text-muted mt-1 mb-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-semibold m-0 text-[15px]">
+                      {plan.title ?? 'برنامه تمرینی'}
+                    </p>
+                    {plan.isDefault && (
+                      <Badge variant="primary" className="text-[10px] py-0">
+                        اصلی
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted m-0">
                     {new Date(plan.createdAt).toLocaleDateString('fa-IR', {
                       year: 'numeric',
                       month: 'long',
@@ -125,14 +147,13 @@ export default function PlansPage() {
         </div>
       )}
 
-      <div className="mt-8 flex gap-2">
-        <Button variant="secondary" fullWidth onClick={() => router.push('/dashboard')}>
-          داشبورد
-        </Button>
-        <Button fullWidth onClick={() => router.push('/onboarding')}>
-          برنامه جدید
+      <div className="mt-8">
+        <Button fullWidth onClick={handleNewPlan}>
+          {entitlements?.canCreatePlan && !entitlements.canCreateFreePlan
+            ? 'برنامه جدید (پولی)'
+            : 'برنامه جدید'}
         </Button>
       </div>
-    </PageShell>
+    </>
   );
 }

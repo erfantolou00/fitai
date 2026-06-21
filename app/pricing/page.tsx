@@ -71,6 +71,9 @@ export default function PricingPage() {
               fullWidth
               onClick={() => {
                 if (plan.id === 'free') router.push('/onboarding');
+                else if (plan.id === 'pro')
+                  router.push('/checkout?product=new_plan&return=/plans');
+                else router.push('/checkout?product=nutrition&return=/nutrition');
               }}
             >
               {plan.cta}

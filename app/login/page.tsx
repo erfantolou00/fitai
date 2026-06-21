@@ -13,7 +13,7 @@ type AuthMode = 'login' | 'register';
 
 function AuthForm() {
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') ?? '/dashboard';
+  const redirect = searchParams.get('redirect') ?? '/home';
   const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
 
   const { refreshAuth } = useAuth();

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getProfile } from '@/app/lib/db/profiles';
 import { listWorkoutPlans } from '@/app/lib/db/workout-plans';
 import { createClient } from '@/app/lib/supabase/server';
 
@@ -12,7 +13,12 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const plans = await listWorkoutPlans(user.id);
+  const [plans, profile] = await Promise.all([
+    listWorkoutPlans(user.id),
+    getProfile(user.id),
+  ]);
+
+  const defaultPlanId = profile?.default_plan_id ?? null;
 
   return NextResponse.json({
     plans: plans.map((p) => ({
@@ -21,6 +27,8 @@ export async function GET() {
       createdAt: p.created_at,
       hasNutrition: !!p.nutrition,
       phase: (p.analysis as { recommendedPhase?: string })?.recommendedPhase,
+      isDefault: p.id === defaultPlanId,
     })),
+    defaultPlanId,
   });
 }
